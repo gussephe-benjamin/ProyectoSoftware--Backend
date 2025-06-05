@@ -1,0 +1,15 @@
+
+- - -
+
+crear guía:
+
+POST https://<tu-api-id>.execute-api.<región>.amazonaws.com/prod/curso/12345/guia
+
+json
+
+{
+  "nombre": "Guía de repaso de Álgebra"
+}
+
+- - -
+

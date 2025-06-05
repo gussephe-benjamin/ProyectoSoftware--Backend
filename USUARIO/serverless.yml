@@ -1,0 +1,129 @@
+org: gussepheb
+service: api-usuario
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::912815927287:role/LabRole
+
+  environment:
+    TABLA_USUARIOS: t_USUARIOS
+    GSI_curso: curso_index
+    GSI_email: email_index
+
+functions:
+
+  # 1) Crear un nuevo usuario
+  crearUsuario:
+    handler: lambdas_usuarios/lambda_USUARIO_crearUsuario.lambda_handler
+    events:
+      - http:
+          path: /usuario/create
+          method: post
+          cors: true
+          integration: lambda
+
+  # 2) Obtener un usuario por ID
+  getUsuarioByID:
+    handler: lambdas_usuarios/lambda_USUARIO_getUsuarioByID.lambda_handler
+    events:
+      - http:
+          path: /usuario/get/{id}
+          method: get
+          cors: true
+          integration: lambda
+
+  # 3) Listar todos los usuarios
+  listarUsuarios:
+    handler: lambdas_usuarios/lambda_USUARIO_listarUsuarios.lambda_handler
+    events:
+      - http:
+          path: /usuario/list
+          method: get
+          cors: true
+          integration: lambda
+
+  # 4) Listar todos los alumnos
+  listarAlumnos:
+    handler: lambdas_usuarios/lambda_USUARIO_listarAlumnos.lambda_handler
+    events:
+      - http:
+          path: /usuario/list/alumnos
+          method: get
+          cors: true
+          integration: lambda
+
+  # 5) Listar todos los profesores
+  listarProfesores:
+    handler: lambdas_usuarios/lambda_USUARIO_listarProfesores.lambda_handler
+    events:
+      - http:
+          path: /usuario/list/profesores
+          method: get
+          cors: true
+          integration: lambda
+
+  # 6) Actualizar un usuario existente
+  actualizarUsuario:
+    handler: lambdas_usuarios/lambda_USUARIO_actualizarUsuario.lambda_handler
+    events:
+      - http:
+          path: /usuario/update/{id}
+          method: put
+          cors: true
+          integration: lambda
+
+  # 7) Eliminar un usuario
+  deleteUsuario:
+    handler: lambdas_usuarios/lambda_USUARIO_deleteUsuario.lambda_handler
+    events:
+      - http:
+          path: /usuario/delete/{id}
+          method: delete
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    UsuariosTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.TABLA_USUARIOS}
+
+        AttributeDefinitions:
+          - AttributeName: uid
+            AttributeType: S
+          - AttributeName: email
+            AttributeType: S
+          - AttributeName: curso_id
+            AttributeType: N
+
+        KeySchema:
+          - AttributeName: uid
+            KeyType: HASH
+
+        StreamSpecification:
+          StreamViewType: NEW_AND_OLD_IMAGES
+
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.GSI_email}
+            KeySchema:
+              - AttributeName: email
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+          - IndexName: ${self:provider.environment.GSI_curso}
+            KeySchema:
+              - AttributeName: curso_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+        BillingMode: PAY_PER_REQUEST
+
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true

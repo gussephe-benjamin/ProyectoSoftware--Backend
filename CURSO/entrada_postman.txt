@@ -1,0 +1,3 @@
+GET https://<tu-api>.amazonaws.com/prod/cursos?profesorId=<ID_DEL_PROFESOR>
+
+GET https://<tu-api>.amazonaws.com/prod/cursos?estudiante_uid=<UID_DEL_ESTUDIANTE>

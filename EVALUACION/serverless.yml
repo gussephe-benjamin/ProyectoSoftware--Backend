@@ -1,0 +1,66 @@
+org: gussepheb
+service: api-evaluacion
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::912815927287:role/LabRole
+
+  environment:
+    EVAL_TABLE: t_Evaluacion
+
+functions:
+
+  # 1) Crear una nueva evaluación (genera evaluacion_id automáticamente y la asocia a un alumno y/o guía)
+  crearEvaluacion:
+    handler: lambdas_evaluacion/lambda_EVALUACION_crearEvaluacion.lambda_handler
+    events:
+      - http:
+          path: /evaluacion/create
+          method: post
+          cors: true
+          integration: lambda
+
+  # 2) Agregar o vincular una evaluación a una guía específica (por evaluacionId y guiaId)
+  agregarEvalAGuia:
+    handler: lambdas_evaluacion/lambda_EVALUACION_agregarEvalAGuia.lambda_handler
+    events:
+      - http:
+          path: /evaluacion/{evaluacionId}/guia/add/{guiaId}
+          method: post
+          cors: true
+          integration: lambda
+
+  # 3) Obtener todos los datos de una evaluación por ID
+  getEvaluacionesByID:
+    handler: lambdas_evaluacion/lambda_EVALUACION_getEvaluacionesByID.lambda_handler
+    events:
+      - http:
+          path: /evaluacion/get/{evaluacionId}
+          method: get
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    EvaluacionTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.EVAL_TABLE}
+
+        # Solo partition key: evaluacion_id (Number)
+        AttributeDefinitions:
+          - AttributeName: evaluacion_id
+            AttributeType: N
+
+        KeySchema:
+          - AttributeName: evaluacion_id
+            KeyType: HASH
+
+        BillingMode: PAY_PER_REQUEST
+
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true

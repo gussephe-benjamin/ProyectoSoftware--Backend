@@ -1,0 +1,74 @@
+PROYECTOSOFTWARE--BACKEND/
+├─ CURSO/
+│    └─ serverless.yml
+│    └─ lambdas_cursos/...
+├─ EVALUACION/
+│    └─ serverless.yml
+│    └─ lambdas_evaluacion/...
+├─ GUIA/
+│    └─ serverless.yml
+│    └─ lambdas_guias/...
+├─ RANKING/
+│    └─ serverless.yml
+│    └─ lambdas_ranking/...
+├─ USUARIO/
+│    └─ serverless.yml
+│    └─ lambdas_usuarios/...
+└─ Deploy/
+     ├─ deploy-all.sh
+     └─ remove-all.sh
+
+1).
+
+cd /ruta/a/PROYECTOSOFTWARE--BACKEND/Deploy
+
+2).
+
+conceder permisos 
+
+chmod +x deploy-all.sh
+chmod +x remove-all.sh
+
+3).
+
+verificar si tenemos las credenciales activas 
+
+aws sts get-caller-identity
+
+4). 
+
+ejecutar
+
+./deploy-all.sh
+
+./remove-all.sh
+
+5). 
+
+==========================================
+  Iniciando despliegue de TODOS los servicios
+  Stage: prod
+==========================================
+
+------------------------------------------
+ Desplegando servicio: USUARIO
+ Ruta: ../USUARIO
+------------------------------------------
+🚀 Ejecutando: npx serverless deploy --stage prod
+... (salida de Serverless Framework para api-usuario) ...
+✅ Servicio 'USUARIO' desplegado correctamente en stage 'prod'.
+
+------------------------------------------
+ Desplegando servicio: CURSO
+ Ruta: ../CURSO
+------------------------------------------
+🚀 Ejecutando: npx serverless deploy --stage prod
+... (salida de Serverless Framework para api-curso) ...
+✅ Servicio 'CURSO' desplegado correctamente en stage 'prod'.
+
+# Y así sucesivamente con GUIA, EVALUACION, RANKING
+
+==========================================
+   ¡Despliegue completado para todos los servicios!
+==========================================
+

@@ -1,0 +1,108 @@
+org: gussepheb
+service: api-guia
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::912815927287:role/LabRole
+
+  environment:
+    GUIA_TABLE: t_GUIA
+    GSI_curso: curso_index
+
+functions:
+
+  # 1) Crear una nueva guía (se genera un nuevo guia_id automáticamente)
+  crearGuia:
+    handler: lambdas_guias/lambda_GUIA_crearGuia.lambda_handler
+    events:
+      - http:
+          path: /guia/create
+          method: post
+          cors: true
+          integration: lambda
+
+  # 2) Obtener los datos completos de una guía por su ID
+  getGuiaById:
+    handler: lambdas_guias/lambda_GUIA_getGuiabyID.lambda_handler
+    events:
+      - http:
+          path: /guia/get/{guiaId}
+          method: get
+          cors: true
+          integration: lambda
+
+  # 3) Listar todos los IDs de las guías asociadas a un curso específico
+  getGuiasIDPorCurso:
+    handler: lambdas_guias/lambda_GUIA_obtenerGuiasIDPorCurso.lambda_handler
+    events:
+      - http:
+          path: /guia/list/curso/{cursoId}
+          method: get
+          cors: true
+          integration: lambda
+
+  # 4) Obtener todas las guías que estén publicadas (retorna solo ítems con publicado = true)
+  obtenerGuiaPublicada:
+    handler: lambdas_guias/lambda_GUIA_obtenerGuiaPublicada.lambda_handler
+    events:
+      - http:
+          path: /guia/list/published
+          method: get
+          cors: true
+          integration: lambda
+
+  # 5) Publicar una guía específica (marca la guía como “publicado”)
+  publicarGuia:
+    handler: lambdas_guias/lambda_GUIA_publicarGuia.lambda_handler
+    events:
+      - http:
+          path: /guia/{guiaId}/publish
+          method: post
+          cors: true
+          integration: lambda
+
+  # 6) Agregar una guía existente a un curso (asigna el atributo curso_id en la guía)
+  agregarGuiaToCurso:
+    handler: lambdas_guias/lambda_GUIA_agregarGuiaToCurso.lambda_handler
+    events:
+      - http:
+          path: /curso/{cursoId}/guia/add/{guiaId}
+          method: post
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    GuiaTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.GUIA_TABLE}
+
+        # Solo Partition Key en la tabla principal: guia_id (Number)
+        AttributeDefinitions:
+          - AttributeName: guia_id
+            AttributeType: N
+          - AttributeName: curso_id
+            AttributeType: N
+
+        KeySchema:
+          - AttributeName: guia_id
+            KeyType: HASH
+
+        # GSI para buscar guías por curso_id
+        GlobalSecondaryIndexes:
+          - IndexName: ${self:provider.environment.GSI_curso}
+            KeySchema:
+              - AttributeName: curso_id
+                KeyType: HASH
+            Projection:
+              ProjectionType: ALL
+
+        BillingMode: PAY_PER_REQUEST
+
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true

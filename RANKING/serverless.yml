@@ -1,0 +1,71 @@
+org: gussepheb
+service: api-ranking
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::912815927287:role/LabRole
+
+  environment:
+    RANKING_TABLE: t_Ranking
+
+functions:
+
+  # 1) Crear un nuevo registro de ranking (asocia un alumno con un curso y sus puntos/racha)
+  crearRanking:
+    handler: lambdas_ranking/lambda_RANKING_crearRanking.lambda_handler
+    events:
+      - http:
+          path: /ranking/create
+          method: post
+          cors: true
+          integration: lambda
+
+  # 2) Actualizar un registro de ranking existente (identificado por cursoId y uid de alumno)
+  actualizarRanking:
+    handler: lambdas_ranking/lambda_RANKING_actualizarRanking.lambda_handler
+    events:
+      - http:
+          path: /ranking/update/{cursoId}/{uid}
+          method: put
+          cors: true
+          integration: lambda
+
+  # 3) Obtener todos los registros de ranking de un curso específico
+  obtenerRankingPorCurso:
+    handler: lambdas_ranking/lambda_RANKING_obtenerRankingporCurso.lambda_handler
+    events:
+      - http:
+          path: /ranking/curso/{cursoId}
+          method: get
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    RankingTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.RANKING_TABLE}
+
+        # Definición de atributos de clave
+        AttributeDefinitions:
+          - AttributeName: curso_id
+            AttributeType: N
+          - AttributeName: uid
+            AttributeType: S
+
+        # KeySchema: curso_id = Partition Key, uid = Sort Key
+        KeySchema:
+          - AttributeName: curso_id
+            KeyType: HASH
+          - AttributeName: uid
+            KeyType: RANGE
+
+        BillingMode: PAY_PER_REQUEST
+
+        PointInTimeRecoverySpecification:
+          PointInTimeRecoveryEnabled: true
