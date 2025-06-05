@@ -10,7 +10,7 @@ provider:
     role: arn:aws:iam::912815927287:role/LabRole
 
   environment:
-    EVAL_TABLE: t_Evaluacion
+    EVAL_TABLE: t_EVALUACION
 
 functions:
 
