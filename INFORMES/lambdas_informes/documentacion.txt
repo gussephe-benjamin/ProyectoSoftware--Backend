@@ -1,0 +1,8 @@
+| Función                           | Propósito                                                                                  | Tablas / Servicios usados                                               |
+| --------------------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------- |
+| **1. getAlumnoSummaryStats**      | Devuelve los KPIs de un alumno (promedio, total evals, racha aprobaciones, % entregas).    | DynamoDB: **Participaciones** (GSI alumno→fecha) y **Evaluaciones**     |
+| **2. exportAlumnoReport**         | Genera y sube a S3 un Excel/PDF con el reporte completo de un solo alumno, devuelve URL.   | Mismas tablas + **S3** para el archivo                                  |
+| **3. getAllStudentsSummaryStats** | Recupera un resumen (KPIs) de **todos** los alumnos en un curso o grado (para el profe).   | DynamoDB: **Participaciones** (scan/query por curso) y **Evaluaciones** |
+| **4. exportAllStudentsReport**    | Genera un Excel/PDF con fila por alumno y sus KPIs; sube a S3, devuelve URL.               | DynamoDB: mismas tablas + **S3**                                        |
+| **5. getCourseStatsForAlumno**    | Para un alumno, devuelve dashboard específico de **curso** (gráficas, comparativo grupal). | DynamoDB: **Participaciones**, **Evaluaciones**, **Cursos**             |
+| **6. exportCourseReport**         | Genera y sube a S3 un reporte global del curso (todos los alumnos, gráficas incluidas).    | DynamoDB: mismas tablas + **Cursos** + **S3**                           |
