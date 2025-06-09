@@ -1,0 +1,101 @@
+org: gussepheb
+service: api-participacion
+
+provider:
+  name: aws
+  runtime: python3.13
+  memorySize: 1024
+  timeout: 30
+  iam:
+    role: arn:aws:iam::912815927287:role/LabRole
+
+  environment:
+    PARTICIPACION_TABLE: t_PARTICIPACION
+
+
+functions:
+
+  # 1) Crear una nueva participación (datos en el body JSON)
+  crearParticipacion:
+    handler: lambdas_participacion/lambda_PARTICIPACION_crearParticipacion.lambda_handler
+    events:
+      - http:
+          path: /participacion/create
+          method: post
+          cors: true
+          integration: lambda
+
+  # 2) Eliminar una participación (id_participacion en el body JSON)
+  eliminarParticipacion:
+    handler: lambdas_participacion/lambda_PARTICIPACION_eliminarParticipacion.lambda_handler
+    events:
+      - http:
+          path: /participacion/delete
+          method: post
+          cors: true
+          integration: lambda
+
+  # 3) Obtener todas las participaciones de un alumno (alumnoId en el body JSON)
+  getParticipacionByAlumno:
+    handler: lambdas_participacion/lambda_PARTICIPACION_getParticipacionByAlumno.lambda_handler
+    events:
+      - http:
+          path: /participacion/getByAlumno
+          method: post
+          cors: true
+          integration: lambda
+
+  # 4) Calcular la racha actual de un alumno (alumnoId en el body JSON)
+  getRachaByAlumno:
+    handler: lambdas_participacion/lambda_PARTICIPACION_getRachaByAlumno.lambda_handler
+    events:
+      - http:
+          path: /participacion/getRachaByAlumno
+          method: post
+          cors: true
+          integration: lambda
+
+  # 5) Obtener el conteo total de la racha de un alumno (alumnoId en el body JSON)
+  getCountRachaByAlumno:
+    handler: lambdas_participacion/lambda_PARTICIPACION_getCountRachaByAlumno.lambda_handler
+    events:
+      - http:
+          path: /participacion/getCountRachaByAlumno
+          method: post
+          cors: true
+          integration: lambda
+
+resources:
+  Resources:
+    ParticipacionesTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: t_Participaciones
+
+        # 1) Definir en AttributeDefinitions todos los atributos que usamos en key schema e índices:
+        AttributeDefinitions:
+          - AttributeName: participacionId   # PK principal
+            AttributeType: S
+          - AttributeName: alumnoId          # GSI Partition Key
+            AttributeType: S
+          - AttributeName: fechaCreacion     # GSI Sort Key
+            AttributeType: S
+
+        # 2) Clave primaria de la tabla:
+        KeySchema:
+          - AttributeName: participacionId
+            KeyType: HASH
+
+        # 3) Modo on‐demand (no aprovisionado de RCU/WCU)
+        BillingMode: PAY_PER_REQUEST
+
+        # 4) Definir el GSI que consulta por alumnoId y ordena por fechaCreacion:
+        GlobalSecondaryIndexes:
+          - IndexName: participaciones_por_alumno
+            KeySchema:
+              - AttributeName: alumnoId
+                KeyType: HASH
+              - AttributeName: fechaCreacion
+                KeyType: RANGE
+            Projection:
+              ProjectionType: ALL
