@@ -19,6 +19,7 @@ SERVICIOS=(
   "GUIA"
   "EVALUACION"
   "RANKING"
+  "PARTICIPACION"
 )
 
 # 3) Ruta base, desde Deploy/ al padre de los servicios
