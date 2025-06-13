@@ -10,7 +10,7 @@ provider:
     role: arn:aws:iam::912815927287:role/LabRole
 
   environment:
-    RANKING_TABLE: t_RANKING
+    RANKING_TABLE: Ranking
 
 functions:
 

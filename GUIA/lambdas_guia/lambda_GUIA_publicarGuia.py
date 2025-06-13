@@ -1,5 +1,6 @@
 import json
 import boto3
+from datetime import datetime
 
 dynamodb = boto3.resource('dynamodb')
 tabla_guias = dynamodb.Table('Guia')
@@ -36,6 +37,12 @@ def lambda_handler(event, context):
             Key={'guia_id': guia_id},
             UpdateExpression='SET publicado = :val',
             ExpressionAttributeValues={':val': True}
+        )
+        
+        tabla_guias.update_item(
+            Key={'guia_id': guia_id},
+            UpdateExpression='SET fecha_liberacion_guia = :val',
+            ExpressionAttributeValues={':val': datetime.utcnow().isoformat() + 'Z'}
         )
 
         return {

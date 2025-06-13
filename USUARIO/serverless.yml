@@ -10,7 +10,7 @@ provider:
     role: arn:aws:iam::912815927287:role/LabRole
 
   environment:
-    TABLA_USUARIOS: t_USUARIOS
+    TABLA_USUARIOS: Usuario
     GSI_curso: curso_index
     GSI_email: email_index
 

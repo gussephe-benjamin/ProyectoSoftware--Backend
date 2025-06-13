@@ -37,7 +37,8 @@ def lambda_handler(event, context):
             'nombre': nombre,
             'evaluacionIds': [],
             'publicado': False,
-            'fechaCreacion': fecha_creacion
+            'fechaCreacion': fecha_creacion,
+            'fecha_liberacion_guia': None
         }
 
         tabla_guias.put_item(Item=nueva_guia)
