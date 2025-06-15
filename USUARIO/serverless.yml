@@ -36,46 +36,6 @@ functions:
           cors: true
           integration: lambda
 
-  # 3) Listar todos los usuarios
-  listarUsuarios:
-    handler: lambdas_usuarios/lambda_USUARIO_listarUsuarios.lambda_handler
-    events:
-      - http:
-          path: /usuario/list
-          method: get
-          cors: true
-          integration: lambda
-
-  # 4) Listar todos los alumnos
-  listarAlumnos:
-    handler: lambdas_usuarios/lambda_USUARIO_listarAlumnos.lambda_handler
-    events:
-      - http:
-          path: /usuario/list/alumnos
-          method: get
-          cors: true
-          integration: lambda
-
-  # 5) Listar todos los profesores
-  listarProfesores:
-    handler: lambdas_usuarios/lambda_USUARIO_listarProfesores.lambda_handler
-    events:
-      - http:
-          path: /usuario/list/profesores
-          method: get
-          cors: true
-          integration: lambda
-
-  # 6) Actualizar un usuario existente
-  actualizarUsuario:
-    handler: lambdas_usuarios/lambda_USUARIO_actualizarUsuario.lambda_handler
-    events:
-      - http:
-          path: /usuario/update/{id}
-          method: put
-          cors: true
-          integration: lambda
-
   # 7) Eliminar un usuario
   deleteUsuario:
     handler: lambdas_usuarios/lambda_USUARIO_deleteUsuario.lambda_handler
