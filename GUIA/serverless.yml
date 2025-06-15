@@ -10,7 +10,7 @@ provider:
     role: arn:aws:iam::912815927287:role/LabRole
 
   environment:
-    GUIA_TABLE: t_GUIA
+    GUIA_TABLE: t_Guia
     GSI_curso: curso_index
 
 functions:
