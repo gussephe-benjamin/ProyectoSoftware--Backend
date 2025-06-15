@@ -5,7 +5,8 @@ from datetime import datetime
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
-table = dynamodb.Table('Curso')
+table = dynamodb.Table('t_Curso')
+table_usuario = dynamodb.Table('t_Usuario')
 
 def lambda_handler(event, context):
     # Configuración de headers para CORS
@@ -15,25 +16,43 @@ def lambda_handler(event, context):
     
     try:
         # Parsear el cuerpo de la solicitud
-        request_body = json.loads(event['body'])
-        
-        # Validar campos obligatorios
-        required_fields = ['nombre', 'profesorId']
-        if not all(field in request_body for field in required_fields):
-            return {
-                'statusCode': 400,
-                'headers': headers,
-                'body': json.dumps({
-                    'message': 'Campos requeridos faltantes',
-                    'required_fields': required_fields
-                })
-            }
-        
+
+        print("Evento Registrado: ", event)
+
+        request_body = event['body']
+                
         # Generar IDs y timestamps
         curso_id = int(datetime.utcnow().timestamp() * 1000)
         fecha_actual = datetime.utcnow().isoformat() + 'Z'
         
+        # Verificar datos de entrada
+
+        response = table_usuario.get_item(
+            Key={
+                'uid': request_body['profesorId']
+            }
+        )
+
+        if 'Item' not in response:
+            return {
+                'statusCode': 404,
+                'headers': headers,
+                'body': json.dumps({
+                    'message': 'El profesor no existe'
+                })
+            }
+
+        if  response['Item']['role'] == 'estudiante':
+            return {
+                'statusCode': 400,
+                'headers': headers,
+                'body': json.dumps({
+                    'message': 'El id ingresado es de un estudiante'
+                })
+            }
+
         # Estructura básica del curso
+
         nuevo_curso = {
             'curso_id': curso_id,
             'nombre': request_body['nombre'],
@@ -43,7 +62,6 @@ def lambda_handler(event, context):
             'guias': []
         }
         
-    
         # Insertar en DynamoDB
         try:
             response = table.put_item(
@@ -51,6 +69,7 @@ def lambda_handler(event, context):
                 ConditionExpression='attribute_not_exists(cursoId)'  # Evitar sobrescritura
             )
         except ClientError as e:
+            print(f"Error en DynamoDB: {e}")
             if e.response['Error']['Code'] == 'ConditionalCheckFailedException':
                 return {
                     'statusCode': 409,
@@ -65,9 +84,9 @@ def lambda_handler(event, context):
         return {
             'statusCode': 201,
             'headers': headers,
-            'body': json.dumps({
+            'body': {
                 'message': 'Curso creado exitosamente'
-            })
+            }
         }
         
     except json.JSONDecodeError:

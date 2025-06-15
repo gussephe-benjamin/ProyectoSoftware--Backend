@@ -14,7 +14,6 @@ provider:
     GSI_profesor: profesor_index
 
 functions:
-
   # 1) Crear un nuevo curso
   crearCurso:
     handler: lambdas_cursos/lambda_CURSO_crearCurso.lambda_handler
