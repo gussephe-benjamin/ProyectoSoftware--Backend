@@ -1,20 +1,10 @@
-#!/usr/bin/env bash
-set -euo pipefail
+#!/bin/bash
 
-# ----------------------------------------------
-# Script: remove-all.sh
-# Propósito: Eliminar todos los servicios Serverless
-# Carpeta base: PROYECTOSOFTWARE--BACKEND
-# Uso:   ./remove-all.sh [stage]
-#   Si no se pasa stage, se usa "prod" por defecto.
-# ----------------------------------------------
-
-# 1) Leer el parámetro [stage], o asignar "prod" si no se da.
+# Verificar si se pasa un stage, si no se usa "prod" como valor predeterminado
 STAGE="${1:-prod}"
 
-# 2) Misma lista de carpetas que en deploy-all.sh
+# Lista de servicios
 SERVICIOS=(
-  "USUARIO"
   "CURSO"
   "GUIA"
   "EVALUACION"
@@ -22,52 +12,49 @@ SERVICIOS=(
   "PARTICIPACION"
 )
 
-# 3) Ruta base, desde Deploy/ al padre de los servicios
+# Ruta base, desde Deploy/ al padre de los servicios
 BASE_DIR="../"
 
-# 4) Guardar directorio inicial para regresar después de cada remove
+# Guardar el directorio de inicio (Deploy/scripts) para regresar allí después de cada eliminación
 START_DIR="$(pwd)"
 
-echo ""
-echo "=========================================="
-echo "  Iniciando eliminación de TODOS los servicios  "
-echo "  Stage: $STAGE"
-echo "=========================================="
-echo ""
-
-for SERVICIO in "${SERVICIOS[@]}"; do
-  SERVICE_DIR="$BASE_DIR$SERVICIO"
-
-  echo "------------------------------------------"
-  echo " Eliminando recursos de servicio: $SERVICIO"
-  echo " Ruta: $SERVICE_DIR"
-  echo "------------------------------------------"
-
-  # 4.1) Verificar que la carpeta existe
-  if [ ! -d "$SERVICE_DIR" ]; then
-    echo "⚠️  Advertencia: El directorio '$SERVICE_DIR' no existe. Se omite este servicio."
-    echo ""
-    continue
-  fi
-
-  # 4.2) Cambiar al directorio del servicio
-  cd "$SERVICE_DIR" || { echo "❌ Error: No se pudo entrar a '$SERVICE_DIR'"; exit 1; }
-
-  # 4.3) Ejecutar remove de Serverless
-  echo "🗑️  Ejecutando: npx serverless remove --stage $STAGE"
-  npx serverless remove --stage "$STAGE" || {
-    echo "❌ Error al eliminar '$SERVICIO' en el stage '$STAGE'. Abortando."
+# Función para asegurar que el directorio existe
+check_directory() {
+  if [ ! -d "$1" ]; then
+    echo "Error: El directorio $1 no existe. Abortando."
     exit 1
-  }
+  fi
+}
 
-  echo "✅ Recursos de '$SERVICIO' eliminados correctamente en stage '$STAGE'."
-  echo ""
+# Verificar si npx y serverless están instalados
+if ! command -v npx &> /dev/null; then
+  echo "npx no está instalado. Instalando..."
+  npm install -g npx
+fi
 
-  # 4.4) Regresar al directorio original (Deploy/)
-  cd "$START_DIR" || { echo "❌ Error: No se pudo regresar a '$START_DIR'"; exit 1; }
+if ! command -v serverless &> /dev/null; then
+  echo "Serverless Framework no está instalado. Instalando..."
+  npm install -g serverless
+fi
+
+for service in "${SERVICIOS[@]}"
+do
+  echo "Removing $service from stage $STAGE..."
+
+  # Cambiar al directorio del servicio usando una ruta relativa
+  SERVICE_DIR="$BASE_DIR$service"
+  check_directory "$SERVICE_DIR"  # Verifica que el directorio existe
+
+  cd "$SERVICE_DIR" || { echo "No se pudo cambiar al directorio $SERVICE_DIR"; exit 1; }
+
+  # Ejecutar remove para el stage especificado
+  echo "Removing service $service from stage $STAGE"
+  npx serverless remove --stage $STAGE || { echo "Error al eliminar $service en el stage $STAGE"; exit 1; }
+
+  # Volver al directorio base (Deploy/scripts) después de cada eliminación
+  cd "$START_DIR" || { echo "Error: No se pudo regresar al directorio base $START_DIR"; exit 1; }
 done
 
 echo "=========================================="
 echo "   ¡Eliminación completada para todos los servicios!"
 echo "=========================================="
-echo ""
