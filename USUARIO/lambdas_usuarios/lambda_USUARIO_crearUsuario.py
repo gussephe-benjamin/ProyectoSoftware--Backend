@@ -3,15 +3,27 @@ import boto3
 from botocore.exceptions import ClientError
 
 dynamodb = boto3.resource('dynamodb')
-tabla_usuarios = dynamodb.Table('Usuario')
+tabla_usuarios = dynamodb.Table('t_Usuario')
 
 def lambda_handler(event, context):
     headers = {
         'Content-Type': 'application/json'
     }
-         
+
     try:
-        body = json.loads(event['body'])
+        body = event['body']
+
+    except json.JSONDecodeError as json_err:
+        return {
+            'statusCode': 400,
+            'headers': headers,
+            'body': {
+                'message': 'Error al procesar el cuerpo de la solicitud',
+                'error': 'JSON inválido'
+            }
+    }
+
+    try:
         uid = body['uid']
         email = body['email']
         role = body['role']
@@ -23,10 +35,10 @@ def lambda_handler(event, context):
             return {
                 'statusCode': 200,
                 'headers': headers,
-                'body': json.dumps({
+                'body': {
                     'message': 'Usuario ya registrado',
                     'usuario': response['Item']
-                })
+                }
             }
 
         # 2. Guardar el nuevo usuario
@@ -42,28 +54,30 @@ def lambda_handler(event, context):
         return {
             'statusCode': 201,
             'headers': headers,
-            'body': json.dumps({
+            'body': {
                 'message': 'Usuario creado correctamente',
                 'usuario': nuevo_usuario
-            })
+            }
         }
 
     except ClientError as e:
+        error_message = str(e) 
         return {
             'statusCode': 500,
             'headers': headers,
-            'body': json.dumps({
+            'body': {
                 'message': 'Error al acceder a DynamoDB',
-                'error': str(e)
-            })
+                'error': error_message
+            }
         }
 
     except Exception as e:
+        error_message = str(e) 
         return {
             'statusCode': 500,
             'headers': headers,
-            'body': json.dumps({
+            'body': {
                 'message': 'Error interno al procesar usuario',
-                'error': str(e)
-            })
+                'error': error_message
+            }
         }
