@@ -31,7 +31,7 @@ START_DIR="$(pwd)"
 # 5) Dirección SSH del servidor donde se van a desplegar los servicios
 # Puedes modificar esta dirección a la de tu servidor o usar variables de entorno para los accesos.
 # Usando SSH para desplegar en el servidor remoto
-REMOTE_SERVER="usuario@ip-del-servidor"
+REMOTE_SERVER="ssh -i ./.ssh/labsuser.pem ubuntu@3.86.183.138"
 
 echo ""
 echo "=========================================="
