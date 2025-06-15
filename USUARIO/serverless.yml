@@ -7,7 +7,7 @@ provider:
   memorySize: 1024
   timeout: 30
   iam:
-    role: arn:aws:iam::912815927287:role/LabRole
+    role: arn:aws:iam::220232483397:role/LabRole
 
   environment:
     TABLA_USUARIOS: t_Usuario
