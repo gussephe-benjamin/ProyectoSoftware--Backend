@@ -7,7 +7,6 @@ usuario_table = dynamodb.Table('t_Usuario')
 
 def lambda_handler(event, context):
     
-    
     response = usuario_table.scan(
         FilterExpression=Key('role').eq('profesor')
     )
