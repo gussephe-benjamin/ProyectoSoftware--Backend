@@ -5,6 +5,7 @@ STAGE="${1:-prod}"
 
 # Lista de servicios
 SERVICIOS=(
+  "USUARIOS"
   "CURSO"
   "GUIA"
   "EVALUACION"
